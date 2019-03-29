@@ -13,7 +13,7 @@ directory as decribet in the introducing section.
 
 **Concrete**:
 
-`python3 downloader.py -f=test_data/correct_paths -d=test_target`
+`python3 downloader.py -f=test_data/correct_paths.txt -d=test_target`
 
 ## Background
 
