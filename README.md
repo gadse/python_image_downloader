@@ -9,7 +9,7 @@ one URL. The downloaded files are to be written to a target directory on the har
 **General**:
 
 `python3 downloader.py -f=<file> -d=<directory>` with`file` being the input file and `directory` being the target 
-directory as decribet in the introducing section.
+directory as decribed in the introducing section.
 
 **Concrete**:
 
