@@ -1,2 +1,4 @@
-# python_image_downloader
-Just a small project to test some stuff.
+# Python Image Downloader
+*Just a small project to test some things in Python.*
+
+This small project is a utility tool to download all images
