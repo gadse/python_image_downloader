@@ -22,11 +22,34 @@ Example:
 
 """
 import argparse
+import logging
+import sys
+import traceback
 from os.path import join, exists
-from warnings import warn
 
 import requests
 from requests import Response
+
+logger = logging.getLogger("downloader")
+logger.setLevel(logging.DEBUG)
+fh = logging.FileHandler("log.csv", mode="w")
+fh.setLevel(logging.DEBUG)
+ch = logging.StreamHandler()
+ch.setLevel(logging.DEBUG)
+csv_formatter = logging.Formatter("%(asctime)s;%(name)s;%(filename)s;%(lineno)d;%(levelname)s;\"%(message)s\"")
+console_formatter = logging.Formatter(
+    "%(asctime)s | %(name)s | %(filename)s:%(lineno)d | %(levelname)s\t| %(message)s")
+fh.setFormatter(csv_formatter)
+ch.setFormatter(console_formatter)
+logger.addHandler(fh)
+logger.addHandler(ch)
+
+
+def log_exception(exctype, value, tb):
+    trace = "".join(traceback.format_exception(exctype, value, tb)).replace("\"", "\'")
+    logger.critical(trace)
+
+sys.excepthook = log_exception
 
 
 def get_images(input_file_path, output_path):
@@ -53,7 +76,8 @@ def get_images(input_file_path, output_path):
             try:
                 response = requests.get(url, headers={'User-Agent': 'Mozilla/5.0'})
             except Exception as e:
-                warn(f"Exception occured when trying to connect. Ignoring this line.\nURL: {url}.\nEXCEPTION: {e}")
+                warn_msg = f"Exception occured when trying to connect. Ignoring this line.\nURL: {url}.\nEXCEPTION: {e}"
+                logging.warning(warn_msg)
             else:
                 success = _url_to_image_file(output_path, response)
                 if not success:
@@ -84,8 +108,9 @@ def _url_to_image_file(output_path, response, file_name=None):
         _bin_body_to_file(join(output_path, file_name), response)
         result = True
     else:
-        warn("URL is valid and address is reachable, but it doesn't lead to an image file."
-             f"MIME type is {response.headers['content-type']}.")
+        warn_msg = ("URL is valid and address is reachable, but it doesn't lead to an image file."
+                   f"MIME type is {response.headers['content-type']}.")
+        logger.warning(warn_msg)
         result = True
     return result
 
@@ -120,7 +145,8 @@ def _bin_body_to_file(output_file_path, response):
 
 def __main():
     args = __parse_cmd_args()
-    get_images(args.file, args.dir)
+    faulty = get_images(args.file, args.dir)
+    logger.info(f"Faulty URLs: {faulty}")
 
 
 def __parse_cmd_args():
@@ -139,4 +165,6 @@ def __parse_cmd_args():
 
 
 if __name__ == "__main__":
+    logger.info("Starting download...")
     __main()
+    logger.info("Finished!")
